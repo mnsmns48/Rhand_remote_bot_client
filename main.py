@@ -1,8 +1,12 @@
 import time
 
 from config import category
-from db_fdb_func import get_data_from_client_activity, get_day_activity_from_fdb_client, get_avail_from_fdb
-from db_pg_func import write_data_in_server, write_data_in_client, truncate_table_in_server
+from db_fdb_func import get_day_activity_from_fdb_client, get_avail_from_fdb
+from db_pg_func import \
+    write_data_in_server, \
+    write_data_in_client, \
+    truncate_table_in_server, \
+    get_data_from_client_activity
 from db_sql_tables import activity, avail
 
 
@@ -11,7 +15,7 @@ def transfer_avail() -> None:
     for key, value in category.items():
         temp_category_list.append(key)
     insert_data = get_avail_from_fdb(tuple(temp_category_list))
-    write_data_in_server(avail, insert_data, 'activity_server')
+    write_data_in_server(avail, insert_data)
     print('Передача ассортимента на сервер завершена')
 
 
@@ -23,19 +27,22 @@ def transfer_sales() -> None:
         if difference:
             print(f"Новых записей {difference}\nВыгружаю данные на сервер")
             insert_data = data_fdb[-difference:]
-            write_data_in_server(activity, insert_data, 'activity_server')
-            write_data_in_client(activity, insert_data, 'activity_client')
+            write_data_in_server(activity, insert_data)
+            write_data_in_client(activity, insert_data)
             print('Данные выгружены')
             time.sleep(100)
         else:
             time.sleep(100)
 
 
-def main():
-    truncate_table_in_server(avail, 'activity_server')
+def main() -> None:
+    truncate_table_in_server(avail)
     transfer_avail()
     transfer_sales()
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('Script stopped')

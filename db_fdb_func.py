@@ -1,12 +1,7 @@
-from datetime import datetime
-from typing import Sequence
-
 import fdb
-from sqlalchemy import create_engine, select, func, Row
-from sqlalchemy.engine.result import _TP
 
 from config import hidden_vars as hv
-from db_sql_tables import activity
+
 from config import category
 
 fdb_connection = fdb.connect(
@@ -90,13 +85,3 @@ def get_avail_from_fdb(args: tuple) -> list:
             'price': int(line[4]) if line[4] is not None else None,
         })
     return return_temp_list
-
-
-def get_data_from_client_activity() -> Sequence[Row[_TP]]:
-    engine = create_engine(f'postgresql+psycopg2://{hv.server_db_username_client}:{hv.server_db_password_client}'
-                           f'@{hv.remote_bind_address_host}:{hv.remote_bind_address_port}/activity_client',
-                           echo=False)
-    conn = engine.connect()
-    today = datetime.today().date()
-    response = conn.execute(select(activity).filter(func.DATE(activity.c.time_) == today)).fetchall()
-    return response

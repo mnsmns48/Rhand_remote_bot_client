@@ -41,14 +41,14 @@ def load_config(path: str = None):
 hidden_vars = load_config('..env')
 
 category = {
-    80: ['Смартфон', 'Samsung'],
-    81: ['Смартфон', 'Realme'],
-    82: ['Смартфон', 'Xiaomi'],
-    83: ['Смартфон', 'Tecno/Infinix'],
-    84: ['Смартфон', 'TCL'],
-    87: ['Смартфон', 'Honor'],
-    28: ['Кнопочный телефон', 'NoBrand'],
-    29: ['Планшет', 'NoBrand'],
+    80: ['Смартфоны', 'Samsung'],
+    81: ['Смартфоны', 'Realme'],
+    82: ['Смартфоны', 'Xiaomi'],
+    83: ['Смартфоны', 'Tecno/Infinix'],
+    84: ['Смартфоны', 'TCL'],
+    87: ['Смартфоны', 'Honor'],
+    28: ['Кнопочные телефоны', 'NoBrand'],
+    29: ['Планшеты', 'NoBrand'],
     36: ['Умные часы', 'NoBrand'],
     54: ['PowerBanks', 'NoBrand'],
     3: ['Замена аккумулятора', 'NoBrand'],
