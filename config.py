@@ -51,6 +51,8 @@ category = {
     29: ['Планшеты', 'NoBrand'],
     36: ['Умные часы', 'NoBrand'],
     54: ['PowerBanks', 'NoBrand'],
-    3: ['Замена аккумулятора', 'NoBrand'],
-    86: ['Замена дисплея', 'NoBrand']
+    # 3: ['Замена аккумулятора', 'NoBrand'],
+    # 86: ['Замена дисплея', 'NoBrand'],
+    67: ['Bluetooth колонки', 'NoBrand'],
+    77: ['Наушники Bluetooth TWS', 'NoBrand']
 }
