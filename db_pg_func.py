@@ -1,9 +1,8 @@
 from datetime import datetime
 
 from retry import retry
-from sqlalchemy import create_engine, insert, Table, text, select, func, Row, Sequence, delete, update
+from sqlalchemy import create_engine, insert, Table, text, select, func, delete, update
 from sshtunnel import SSHTunnelForwarder, BaseSSHTunnelForwarderError
-from sqlalchemy.engine.result import _TP
 from config import hidden_vars as hv
 from db_sql_tables import activity, avail
 

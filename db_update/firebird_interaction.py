@@ -1,10 +1,8 @@
-from typing import List
+from typing import Any
 
 import fdb
 
-from config import hidden_vars as hv, category_test
-
-from config import category
+from config import hidden_vars as hv
 
 fdb_connection = fdb.connect(
     dsn=hv.fdb_dsn,
@@ -13,10 +11,20 @@ fdb_connection = fdb.connect(
 )
 
 
-def get_ispath_from_fdb() -> List[tuple]:
+def get_ispath_from_fdb() -> list[dict[str, int | bool | Any]]:
     cur = fdb_connection.cursor()
     cur.execute('SELECT code, parent, name FROM DIR_GOODS dg WHERE ISPATH = 1')
-    result = cur.fetchall()
+    temp_data = cur.fetchall()
+    result = list()
+    for line in temp_data:
+        result.append(
+            {
+                'code': int(line[0]),
+                'parent': int(line[1]),
+                'ispath': True,
+                'name': line[2],
+            }
+        )
     return result
 
 
@@ -47,10 +55,17 @@ def get_full_stock_from_fdb(args: tuple):
         'HAVING SUM(SQ.QUANTITY) >= 1 '
         'ORDER BY SQ.PARENT, SQ.CODE'
     )
-    result = cur.fetchall()
+    temp_data = cur.fetchall()
+    result = list()
+    for line in temp_data:
+        result.append(
+            {
+                'code': int(line[0]),
+                'parent': int(line[1]),
+                'ispath': False,
+                'name': line[2],
+                'quantity': int(line[3]) if line[3] else None,
+                'price': int(line[4]) if line[4] else None,
+            }
+        )
     return result
-
-
-d = get_full_stock_from_fdb(category_test)
-for line in d:
-    print(line)
