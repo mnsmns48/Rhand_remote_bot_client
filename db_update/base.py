@@ -14,5 +14,8 @@ class StockTable(Base):
     parent: Mapped[int]
     ispath: Mapped[bool]
     name: Mapped[str]
-    quantity: Mapped[int]
-    price: Mapped[int]
+    quantity: Mapped[int] = mapped_column(nullable=True)
+    price: Mapped[int] = mapped_column(nullable=True)
+
+
+

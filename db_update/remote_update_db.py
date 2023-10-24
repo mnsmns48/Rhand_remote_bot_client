@@ -18,7 +18,7 @@ def create_new_remote_table_server() -> None:
         engine_server = create_engine(
             f"postgresql://{hv.server_db_username_server}:{hv.server_db_password_server}@"
             f"{hv.remote_bind_address_host}:{local_port}/activity_server",
-            echo=False)
+            echo=True)
         Base.metadata.create_all(engine_server)
         print('Table created')
 
@@ -31,5 +31,6 @@ def create_new_table_client() -> None:
     Base.metadata.create_all(engine_client)
     print('Table created')
 
-# create_new_remote_table_server()  # создать таблицу на сервере
-# create_new_table_client() #создать таблицу на клиентской машине
+
+create_new_remote_table_server()  # создать таблицу на сервере
+create_new_table_client()  # создать таблицу на клиентской машине
