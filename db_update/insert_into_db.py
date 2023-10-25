@@ -8,14 +8,16 @@ from db_update.base import StockTable
 from db_update.firebird_interaction import get_ispath_from_fdb, get_full_stock_from_fdb
 
 engine_client = create_engine(f'postgresql+psycopg2://{hv.server_db_username_client}:{hv.server_db_password_client}'
-                              f'@loc{hv.remote_bind_address_host}:{hv.remote_bind_address_port}/activity_server')
+                              f'@{hv.remote_bind_address_host}:{hv.remote_bind_address_port}/activity_server')
 
 
-def write_data_in_client(table: Type, data: list) -> None:
+def write_data_in_client(table: Type, ispath_list: list, stock_data: list) -> None:
     conn = engine_client.connect()
-    conn.execute(insert(table), data)
+    conn.execute(insert(table), ispath_list)
+    conn.execute(insert(table), stock_data)
     conn.commit()
     conn.close()
+    print('success')
 
 
 def write_data_in_ssh_server(table: Type, ispath_list: list, stock_data: list) -> None:
@@ -40,4 +42,5 @@ def write_data_in_ssh_server(table: Type, ispath_list: list, stock_data: list) -
 
 path_ = get_ispath_from_fdb()
 data_ = get_full_stock_from_fdb(category_goods_)
-write_data_in_ssh_server(table=StockTable, ispath_list=path_, stock_data=data_)
+# write_data_in_ssh_server(table=StockTable, ispath_list=path_, stock_data=data_)
+# write_data_in_client(table=StockTable, ispath_list=path_, stock_data=data_)
