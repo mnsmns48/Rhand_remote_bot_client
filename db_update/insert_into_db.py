@@ -3,7 +3,7 @@ from typing import Type
 from sqlalchemy import insert, create_engine
 from sshtunnel import SSHTunnelForwarder
 
-from config import hidden_vars as hv, category_test
+from config import hidden_vars as hv, category_goods_
 from db_update.base import StockTable
 from db_update.firebird_interaction import get_ispath_from_fdb, get_full_stock_from_fdb
 
@@ -39,5 +39,5 @@ def write_data_in_ssh_server(table: Type, ispath_list: list, stock_data: list) -
 
 
 path_ = get_ispath_from_fdb()
-data_ = get_full_stock_from_fdb(category_test)
+data_ = get_full_stock_from_fdb(category_goods_)
 write_data_in_ssh_server(table=StockTable, ispath_list=path_, stock_data=data_)
