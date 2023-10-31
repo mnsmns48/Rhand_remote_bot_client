@@ -2,7 +2,7 @@ from typing import Any
 
 import fdb
 
-from config import hidden_vars as hv, category_main
+from config import hidden_vars as hv, category_goods_
 
 fdb_connection = fdb.connect(
     dsn=hv.fdb_dsn,
@@ -13,11 +13,11 @@ fdb_connection = fdb.connect(
 
 def get_ispath_from_fdb() -> list[dict[str, int | bool | Any]]:
     cur = fdb_connection.cursor()
-    cur.execute('SELECT code, parent, name FROM DIR_GOODS dg WHERE ISPATH = 1')
+    cur.execute('SELECT code, parent, name FROM DIR_GOODS dg WHERE ISPATH = 1 ORDER BY code')
     temp_data = cur.fetchall()
     result = list()
     for line in temp_data:
-        if (int(line[0]) in category_main.keys() and int(line[1]) == 0) or int(line[1]) in category_main.keys():
+        if int(line[0]) in category_goods_:
             result.append(
                 {
                     'code': int(line[0]),

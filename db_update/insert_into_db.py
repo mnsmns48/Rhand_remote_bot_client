@@ -42,5 +42,5 @@ def write_data_in_ssh_server(table: Type, ispath_list: list, stock_data: list) -
 
 path_ = get_ispath_from_fdb()
 data_ = get_full_stock_from_fdb(category_goods_)
-# write_data_in_ssh_server(table=StockTable, ispath_list=path_, stock_data=data_)
-# write_data_in_client(table=StockTable, ispath_list=path_, stock_data=data_)
+write_data_in_ssh_server(table=StockTable, ispath_list=path_, stock_data=data_)
+write_data_in_client(table=StockTable, ispath_list=path_, stock_data=data_)
