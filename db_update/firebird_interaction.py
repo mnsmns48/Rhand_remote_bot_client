@@ -1,8 +1,9 @@
+from operator import itemgetter
 from typing import Any
 
 import fdb
 
-from config import hidden_vars as hv, category_goods_
+from config import hidden_vars as hv, category_goods_, menu_tuple
 
 fdb_connection = fdb.connect(
     dsn=hv.fdb_dsn,
@@ -17,7 +18,7 @@ def get_ispath_from_fdb() -> list[dict[str, int | bool | Any]]:
     temp_data = cur.fetchall()
     result = list()
     for line in temp_data:
-        if int(line[0]) in category_goods_:
+        if int(line[0]) in category_goods_ or int(line[0]) in menu_tuple:
             result.append(
                 {
                     'code': int(line[0]),
@@ -70,3 +71,4 @@ def get_full_stock_from_fdb(args: tuple):
             }
         )
     return result
+
