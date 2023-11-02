@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from environs import Env
+from sshtunnel import SSHTunnelForwarder
 
 
 @dataclass
@@ -78,3 +79,22 @@ menu_tuple = (
     33,  # Авто товары
     8,  # Батареи и аккумуляторы
 )
+
+
+class Launch_Engine:
+    def __init__(self,
+                 username: str,
+                 password: str,
+                 port: str):
+        self.engine = f'postgresql+psycopg2://' \
+                      f'{username}:{password}@{hidden_vars.remote_bind_address_host}:{port}/activity_server'
+
+
+def create_ssh_tunnel() -> SSHTunnelForwarder:
+    tunnel = SSHTunnelForwarder(
+        (hidden_vars.ssh_host, 22),
+        ssh_username=hidden_vars.ssh_username,
+        ssh_password=hidden_vars.ssh_password,
+        remote_bind_address=(hidden_vars.remote_bind_address_host, hidden_vars.remote_bind_address_port))
+    tunnel.start()
+    return tunnel

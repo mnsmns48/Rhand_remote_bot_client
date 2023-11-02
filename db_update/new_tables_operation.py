@@ -1,61 +1,54 @@
 from typing import Type
 
 from sqlalchemy import create_engine, FromClause
+from sqlalchemy.orm import Session
 from sshtunnel import SSHTunnelForwarder
-from config import hidden_vars as hv
+
+from config import Launch_Engine, hidden_vars as hv, create_ssh_tunnel
 from db_update.base import Base, StockTable
 
-engine_client = create_engine(
-    url=f'postgresql+psycopg2://{hv.server_db_username_client}:{hv.server_db_password_client}'
-        f'@{hv.remote_bind_address_host}:{hv.remote_bind_address_port}/activity_server',
-    echo=True)
 
-
-def truncate_client_table(table: Type[FromClause]) -> None:
-    Base.metadata.drop_all(engine_client, tables=[table.__table__])
+def truncate_table(tunnel: SSHTunnelForwarder | None, table: Type[FromClause]) -> None:
+    if tunnel:
+        start = Launch_Engine(
+            username=hv.server_db_username_server,
+            password=hv.server_db_password_server,
+            port=str(tunnel.local_bind_port),
+        )
+    else:
+        start = Launch_Engine(
+            username=hv.server_db_username_client,
+            password=hv.server_db_password_client,
+            port=hv.remote_bind_address_port,
+        )
+    engine = create_engine(url=start.engine, echo=True)
+    with Session(engine) as connect:
+        Base.metadata.drop_all(bind=connect.bind, tables=[table.__table__])
     print('Truncate table -', table.__table__)
 
 
-def create_new_table_client(base: Type[Base]) -> None:
-    base.metadata.create_all(engine_client)
+def create_table(tunnel: SSHTunnelForwarder | None, base: Type[Base]) -> None:
+    if tunnel:
+        start = Launch_Engine(
+            username=hv.server_db_username_server,
+            password=hv.server_db_password_server,
+            port=str(tunnel.local_bind_port),
+        )
+    else:
+        start = Launch_Engine(
+            username=hv.server_db_username_client,
+            password=hv.server_db_password_client,
+            port=hv.remote_bind_address_port,
+        )
+    engine = create_engine(url=start.engine, echo=True)
+    with Session(engine) as connect:
+        base.metadata.create_all(bind=connect.bind)
     print('Table created -', base.__table__)
 
 
-def truncate_remote_table_server(table: Type[FromClause]) -> None:
-    with SSHTunnelForwarder(
-            (hv.ssh_host, 22),
-            ssh_username=hv.ssh_username,
-            ssh_password=hv.ssh_password,
-            remote_bind_address=(hv.remote_bind_address_host, hv.remote_bind_address_port)) as server:
-        server.start()
-        local_port = str(server.local_bind_port)
-        print('Connection with DB success...')
-        engine_server = create_engine(
-            f"postgresql://{hv.server_db_username_server}:{hv.server_db_password_server}@"
-            f"{hv.remote_bind_address_host}:{local_port}/activity_server",
-            echo=True)
-        Base.metadata.drop_all(engine_server, tables=[table.__table__])
-        print('Truncate table on server -', table.__table__)
-
-
-def create_new_remote_table_server() -> None:
-    with SSHTunnelForwarder(
-            (hv.ssh_host, 22),
-            ssh_username=hv.ssh_username,
-            ssh_password=hv.ssh_password,
-            remote_bind_address=(hv.remote_bind_address_host, hv.remote_bind_address_port)) as server:
-        server.start()
-        local_port = str(server.local_bind_port)
-        print('Connection with DB success...')
-        engine_server = create_engine(
-            f"postgresql://{hv.server_db_username_server}:{hv.server_db_password_server}@"
-            f"{hv.remote_bind_address_host}:{local_port}/activity_server",
-            echo=True)
-        Base.metadata.create_all(engine_server)
-        print('Table created')
-
-
-# truncate_client_table(StockTable)  # удалить таблицу на клиенте
-# truncate_remote_table_server(StockTable)  # удалить таблицу на сервере
-# create_new_remote_table_server()  # создать таблицу на сервере
-# create_new_table_client(StockTable)  # создать таблицу на клиентской машине
+ssh_tunnel = create_ssh_tunnel()
+truncate_table(table=StockTable, tunnel=ssh_tunnel)  # удалить таблицу
+create_table(base=StockTable, tunnel=ssh_tunnel)  # создать таблицу
+# if tunnel = None,
+#   write_data on client,
+#       else write_data on server
