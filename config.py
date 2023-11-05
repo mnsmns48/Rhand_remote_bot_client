@@ -86,6 +86,7 @@ class Launch_Engine:
                  username: str,
                  password: str,
                  port: str):
+        self.tunnel = None
         self.engine = f'postgresql+psycopg2://' \
                       f'{username}:{password}@{hidden_vars.remote_bind_address_host}:{port}/activity_server'
 

@@ -47,8 +47,8 @@ def create_table(tunnel: SSHTunnelForwarder | None, base: Type[Base]) -> None:
 
 
 ssh_tunnel = create_ssh_tunnel()
-truncate_table(table=StockTable, tunnel=ssh_tunnel)  # удалить таблицу
-create_table(base=StockTable, tunnel=ssh_tunnel)  # создать таблицу
+truncate_table(table=StockTable, tunnel=None)  # удалить таблицу
+create_table(base=StockTable, tunnel=None)  # создать таблицу
 # if tunnel = None,
 #   write_data on client,
 #       else write_data on server

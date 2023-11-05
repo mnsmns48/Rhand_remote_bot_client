@@ -32,7 +32,7 @@ ssh_tunnel = create_ssh_tunnel()
 folders_ = get_folders_from_fdb()
 data_ = get_full_stock_from_fdb(category_goods_ + menu_tuple)
 
-write_data(table=StockTable, data=folders_ + data_, tunnel=ssh_tunnel)
+write_data(table=StockTable, data=folders_ + data_, tunnel=None)
 # if tunnel = None,
 #   write_data on client,
 #       else write_data on server
