@@ -14,12 +14,14 @@ def write_data(tunnel: SSHTunnelForwarder | None, table: Type, data: List) -> No
             username=hv.server_db_username_server,
             password=hv.server_db_password_server,
             port=str(tunnel.local_bind_port),
+            db_name=hv.server_db_name
         )
     else:
         start = Launch_Engine(
-            username=hv.server_db_username_client,
-            password=hv.server_db_password_client,
-            port=hv.remote_bind_address_port,
+            username=hv.local_db_username,
+            password=hv.local_db_password,
+            port=hv.local_db_port,
+            db_name=hv.local_db_name
         )
     engine = create_engine(url=start.engine, echo=True)
     with Session(engine) as connect:

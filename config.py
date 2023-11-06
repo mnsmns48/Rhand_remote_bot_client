@@ -14,9 +14,14 @@ class Hidden:
     server_db_password_server: str
     server_db_username_client: str
     server_db_password_client: str
+    server_db_name: str
     fdb_dsn: str
     fdb_user: str
     fdb_password: str
+    local_db_username: str
+    local_db_password: str
+    local_db_port: str
+    local_db_name: str
 
 
 def load_config(path: str = None):
@@ -32,10 +37,14 @@ def load_config(path: str = None):
         server_db_password_server=env.str("SERVER_DB_PASSWORD_SERVER"),
         server_db_username_client=env.str("SERVER_DB_USERNAME_CLIENT"),
         server_db_password_client=env.str("SERVER_DB_PASSWORD_CLIENT"),
+        server_db_name=env.str("SERVER_DB_NAME"),
         fdb_dsn=env.str("FDB_DSN"),
         fdb_user=env.str("FDB_USER"),
-        fdb_password=env.str("FDB_PASSWORD")
-
+        fdb_password=env.str("FDB_PASSWORD"),
+        local_db_username=env.str("LOCAL_DB_USERNAME"),
+        local_db_password=env.str("LOCAL_DB_PASSWORD"),
+        local_db_port=env.str("LOCAL_DB_PORT"),
+        local_db_name=env.str("LOCAL_DB_NAME")
     )
 
 
@@ -48,6 +57,7 @@ category = {
     83: ['Смартфоны', 'Tecno/Infinix'],
     84: ['Смартфоны', 'TCL'],
     87: ['Смартфоны', 'Honor'],
+    101: ['Смартфоны', 'Wiko'],
     28: ['Кнопочные телефоны', 'NoBrand'],
     29: ['Планшеты', 'NoBrand'],
     36: ['Умные часы', 'NoBrand'],
@@ -59,8 +69,8 @@ category = {
 }
 
 category_goods_ = (3, 4, 5, 9, 10, 21, 24, 32, 38, 39, 40, 41, 42, 43, 45, 49, 51, 53, 55, 57, 60, 61, 62, 63, 69, 77,
-                   78, 79, 80, 81, 82, 83, 84, 87, 90, 92, 93, 94, 95, 96, 97, 98, 99, 100, 117, 118, 119, 120, 121,
-                   122, 123, 125, 126, 127, 128)
+                   78, 79, 80, 81, 82, 83, 84, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 117, 118,
+                   119, 120, 121, 122, 123, 125, 126, 127, 128)
 
 menu_tuple = (
     12,  # Смартфоны
@@ -85,10 +95,11 @@ class Launch_Engine:
     def __init__(self,
                  username: str,
                  password: str,
-                 port: str):
+                 port: str,
+                 db_name: str):
         self.tunnel = None
         self.engine = f'postgresql+psycopg2://' \
-                      f'{username}:{password}@{hidden_vars.remote_bind_address_host}:{port}/activity_server'
+                      f'{username}:{password}@{hidden_vars.remote_bind_address_host}:{port}/{db_name}'
 
 
 def create_ssh_tunnel() -> SSHTunnelForwarder:

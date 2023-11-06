@@ -14,12 +14,14 @@ def truncate_table(tunnel: SSHTunnelForwarder | None, table: Type[FromClause]) -
             username=hv.server_db_username_server,
             password=hv.server_db_password_server,
             port=str(tunnel.local_bind_port),
+            db_name=hv.server_db_name
         )
     else:
         start = Launch_Engine(
             username=hv.server_db_username_client,
             password=hv.server_db_password_client,
             port=hv.remote_bind_address_port,
+            db_name=hv.local_db_name
         )
     engine = create_engine(url=start.engine, echo=True)
     with Session(engine) as connect:
@@ -33,12 +35,14 @@ def create_table(tunnel: SSHTunnelForwarder | None, base: Type[Base]) -> None:
             username=hv.server_db_username_server,
             password=hv.server_db_password_server,
             port=str(tunnel.local_bind_port),
+            db_name=hv.server_db_name
         )
     else:
         start = Launch_Engine(
             username=hv.server_db_username_client,
             password=hv.server_db_password_client,
             port=hv.remote_bind_address_port,
+            db_name=hv.local_db_name
         )
     engine = create_engine(url=start.engine, echo=True)
     with Session(engine) as connect:
@@ -47,8 +51,8 @@ def create_table(tunnel: SSHTunnelForwarder | None, base: Type[Base]) -> None:
 
 
 ssh_tunnel = create_ssh_tunnel()
-truncate_table(table=StockTable, tunnel=None)  # удалить таблицу
-create_table(base=StockTable, tunnel=None)  # создать таблицу
+# truncate_table(table=StockTable, tunnel=None)  # удалить таблицу
+# create_table(base=StockTable, tunnel=None)  # создать таблицу
 # if tunnel = None,
 #   write_data on client,
 #       else write_data on server
