@@ -12,11 +12,6 @@ fdb_connection = fdb.connect(
 )
 
 
-# def result_dict_create(fdb_response: List) -> list[dict[str, int | bool | Any]]:
-#     result = list()
-#     for line in fdb_response:
-
-
 def get_folders_from_fdb() -> list[dict[str, int | bool | Any]]:
     cur = fdb_connection.cursor()
     cur.execute('SELECT code, parent, name FROM DIR_GOODS dg WHERE ISPATH = 1 ORDER BY code')

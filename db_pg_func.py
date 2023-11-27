@@ -4,7 +4,7 @@ from retry import retry
 from sqlalchemy import create_engine, insert, Table, text, select, func, delete, update
 from sshtunnel import SSHTunnelForwarder, BaseSSHTunnelForwarderError
 from config import hidden_vars as hv
-from db_sql_tables import activity, avail
+from v2.tables import activity, avail
 
 engine_client = create_engine(f'postgresql+psycopg2://{hv.server_db_username_client}:{hv.server_db_password_client}'
                               f'@{hv.remote_bind_address_host}:{hv.remote_bind_address_port}/activity_client')
@@ -52,7 +52,7 @@ def write_data_in_client(table: Table, data: list) -> None:
 
 
 @retry(BaseSSHTunnelForwarderError, tries=5000, delay=30)
-def truncate_table_in_server(table: Table) -> None:
+def truncate_table_in_server(*tables: str) -> None:
     with SSHTunnelForwarder(
             (hv.ssh_host, 22),
             ssh_username=hv.ssh_username,
@@ -67,9 +67,12 @@ def truncate_table_in_server(table: Table) -> None:
             echo=False)
         conn = engine.connect()
         print('Очищаю таблицу наличия на сервере')
-        conn.execute(text(f"TRUNCATE TABLE {table}"))
+        for table in tables:
+            conn.execute(text(f"TRUNCATE TABLE {table}"))
+            print(f'Очищаю таблицу {table} на сервере')
         conn.commit()
         conn.close()
+        server.stop()
 
 
 def get_data_from_client_activity():

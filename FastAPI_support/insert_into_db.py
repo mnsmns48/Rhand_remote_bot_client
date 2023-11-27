@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session
 from sshtunnel import SSHTunnelForwarder
 
 from config import hidden_vars as hv, category_goods_, menu_tuple, Launch_Engine, create_ssh_tunnel
-from db_update.base import StockTable
-from db_update.firebird_interaction import get_folders_from_fdb, get_full_stock_from_fdb
+from v2.base import StockTable
+from FastAPI_support.firebird_interaction import get_folders_from_fdb, get_full_stock_from_fdb
 
 
 def write_data(tunnel: SSHTunnelForwarder | None, table: Type, data: List) -> None:
@@ -35,6 +35,7 @@ folders_ = get_folders_from_fdb()
 data_ = get_full_stock_from_fdb(category_goods_ + menu_tuple)
 
 write_data(table=StockTable, data=folders_ + data_, tunnel=None)
+write_data(table=StockTable, data=folders_ + data_, tunnel=ssh_tunnel)
 # if tunnel = None,
 #   write_data on client,
 #       else write_data on server

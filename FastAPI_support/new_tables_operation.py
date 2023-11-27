@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from sshtunnel import SSHTunnelForwarder
 
 from config import Launch_Engine, hidden_vars as hv, create_ssh_tunnel
-from db_update.base import Base, StockTable
+from v2.tables import Base, StockTable
 
 
 def truncate_table(tunnel: SSHTunnelForwarder | None, table: Type[FromClause]) -> None:
@@ -51,8 +51,10 @@ def create_table(tunnel: SSHTunnelForwarder | None, base: Type[Base]) -> None:
 
 
 ssh_tunnel = create_ssh_tunnel()
-# truncate_table(table=StockTable, tunnel=None)  # удалить таблицу
-# create_table(base=StockTable, tunnel=None)  # создать таблицу
+truncate_table(table=StockTable, tunnel=None)  # удалить таблицу
+create_table(base=StockTable, tunnel=None)  # создать таблицу
+truncate_table(table=StockTable, tunnel=ssh_tunnel)  # удалить таблицу
+create_table(base=StockTable, tunnel=ssh_tunnel)  # создать таблицу
 # if tunnel = None,
 #   write_data on client,
 #       else write_data on server

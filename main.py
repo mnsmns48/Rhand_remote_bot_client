@@ -1,44 +1,16 @@
-import time
+from v2.postgres_db_func_crud import truncate_table, create_ssh_tunnel
+from v2.tables import avail, StockTable
 
-from config import category
-from db_fdb_func import get_day_activity_from_fdb_client, get_avail_from_fdb
-from db_pg_func import \
-    write_data_in_server, \
-    write_data_in_client, \
-    truncate_table_in_server, \
-    get_data_from_client_activity
-from db_sql_tables import activity, avail
+ssh_connect = create_ssh_tunnel()
 
 
-def transfer_avail() -> None:
-    temp_category_list = list()
-    for key, value in category.items():
-        temp_category_list.append(key)
-    insert_data = get_avail_from_fdb(tuple(temp_category_list))
-    write_data_in_server(avail, insert_data)
-    print('Передача ассортимента на сервер завершена')
+def refresh():
+    truncate_table([avail, StockTable.__name__], tunnel=None)
+    truncate_table([avail, StockTable.__name__], tunnel=ssh_connect)
 
 
-def transfer_sales() -> None:
-    while True:
-        data_client = get_data_from_client_activity()
-        data_fdb = get_day_activity_from_fdb_client()
-        difference = len(data_fdb) - len(data_client)
-        if difference:
-            print(f"Новых записей {difference}\nВыгружаю данные на сервер")
-            insert_data = data_fdb[-difference:]
-            write_data_in_server(activity, insert_data)
-            write_data_in_client(activity, insert_data)
-            print('Данные выгружены')
-            time.sleep(100)
-        else:
-            time.sleep(100)
-
-
-def main() -> None:
-    truncate_table_in_server(avail)
-    transfer_avail()
-    transfer_sales()
+def main():
+    refresh()
 
 
 if __name__ == '__main__':
