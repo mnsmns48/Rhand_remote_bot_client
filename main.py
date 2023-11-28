@@ -1,16 +1,22 @@
-from v2.postgres_db_func_crud import truncate_table, create_ssh_tunnel
-from v2.tables import avail, StockTable
+from config import category_goods_, menu_tuple
+from v2.day_activity_transfer_events import transfer_activity
+from v2.firebird_db_func import get_folders_from_fdb, get_full_stock_from_fdb
+from v2.postgres_db_func_crud import truncate_table, upload_data
+from v2.tables import StockTable
 
-ssh_connect = create_ssh_tunnel()
 
-
-def refresh():
-    truncate_table([avail, StockTable.__name__], tunnel=None)
-    truncate_table([avail, StockTable.__name__], tunnel=ssh_connect)
+def refresh_availability():
+    print('Обновляют таблицу наличия на SSH сервере и на данном ПК')
+    truncate_table([StockTable.__name__])
+    truncate_table([StockTable.__name__], tunnel=True)
+    data_ = get_folders_from_fdb() + get_full_stock_from_fdb(category_goods_ + menu_tuple)
+    upload_data(table=StockTable, data=data_)
+    upload_data(table=StockTable, data=data_, tunnel=True)
 
 
 def main():
-    refresh()
+    refresh_availability()
+    transfer_activity()
 
 
 if __name__ == '__main__':

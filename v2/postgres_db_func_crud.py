@@ -1,65 +1,54 @@
-from typing import List, Callable
+from typing import List, Type
 
-from sqlalchemy import create_engine, text, Table, insert
+from retry import retry
+from sqlalchemy import create_engine, text, Table, insert, select, delete, update
 from sqlalchemy.orm import Session
-from sshtunnel import SSHTunnelForwarder
+from sshtunnel import BaseSSHTunnelForwarderError
 
-from config import hidden_vars as hv
-from v2.engine import Launch_Engine
-
-
-def create_ssh_tunnel() -> SSHTunnelForwarder:
-    tunnel = SSHTunnelForwarder(
-        (hv.ssh_host, 22),
-        ssh_username=hv.ssh_username,
-        ssh_password=hv.ssh_password,
-        remote_bind_address=(hv.remote_bind_address_host, hv.remote_bind_address_port))
-    tunnel.start()
-    return tunnel
+from v2.engine import check_connection
+from v2.tables import StockTable
 
 
-def ssh_connection_check(function: Callable) -> Callable:
-    def wrapped(*args, **kwargs):
-        if kwargs['tunnel']:
-            tunnel = create_ssh_tunnel()
-            start = Launch_Engine(
-                username=hv.server_db_username_server,
-                password=hv.server_db_password_server,
-                host=hv.remote_bind_address_host,
-                port=str(tunnel.local_bind_port),
-                db_name=hv.server_db_name
-            )
-            function(bind=start, *args, **kwargs)
-            tunnel.close()
-        else:
-            start = Launch_Engine(
-                username=hv.server_db_username_client,
-                password=hv.server_db_password_client,
-                host=hv.remote_bind_address_host,
-                port=hv.remote_bind_address_port,
-                db_name=hv.local_db_name
-            )
-            function(bind=start, *args, **kwargs)
-
-    return wrapped
-
-
-@ssh_connection_check
-def truncate_table(tables: List[str], **kwargs) -> None:
+@retry(BaseSSHTunnelForwarderError, tries=5000, delay=30)
+@check_connection
+def truncate_table(tables: List[str], **kwargs) -> bool:
     engine = create_engine(url=kwargs['bind'].engine, echo=False)
     with Session(engine) as connect:
         for table in tables:
             connect.execute(text(f"TRUNCATE TABLE {table}"))
             connect.commit()
-        print(f'Данные в {table} обновлены на {engine.url.host} {engine.url.port}')
+        print(f'Таблица {table} очищена на {engine.url.host} {engine.url.port}')
+    return True
 
 
-@ssh_connection_check
-def upload_data(table: Table, data: List, **kwargs) -> None:
+@retry(BaseSSHTunnelForwarderError, tries=5000, delay=30)
+@check_connection
+def upload_data(table: Type[StockTable], data: List, **kwargs) -> bool:
     engine = create_engine(url=kwargs['bind'].engine, echo=False)
     with Session(engine) as connect:
         connect.execute(insert(table), data)
         connect.commit()
-        print(f'Очищаю таблицу {table} на {engine.url.host} {engine.url.port}')
+        print(f'Загрузка данных в {table} на {engine.url.host} {engine.url.port} завершена')
+    return True
 
 
+@retry(BaseSSHTunnelForwarderError, tries=5000, delay=30)
+@check_connection
+def update_data(table: Type[StockTable], data: List, **kwargs) -> bool:
+    temp_list_ = dict()
+    for line in data:
+        temp_list_.update({line.get('product_code'): int(line.get('quantity'))})
+    engine = create_engine(url=kwargs['bind'].engine, echo=False)
+    with Session(engine) as connect:
+        response = connect.execute(select(table).filter(table.code.in_(temp_list_.keys()))).fetchall()
+        for line in response:
+            current_amount = line[0].quantity - temp_list_.get(line[0].code)
+            if current_amount == 0:
+                connect.execute(delete(table).where(table.code == line[0].code))
+                print(f"Удаляю проданную позицию из наличия: {line[0].code} {line[0].name}\n")
+            else:
+                connect.execute(update(table).where(table.code == line[0].code)
+                                .values(quantity=current_amount))
+                print(f"Меняю количество товара на сайте:\n"
+                      f"{line[0].name}\nБыло {line[0].quantity} шт. -> стало {current_amount} шт.\n")
+    return True

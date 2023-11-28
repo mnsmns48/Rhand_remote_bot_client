@@ -15,16 +15,6 @@ activity = Table('activity', metadata,
                  Column('return_', Boolean),
                  )
 
-avail = Table(
-    'avail', metadata,
-    Column('type_', VARCHAR),
-    Column('brand', VARCHAR),
-    Column('code', Integer),
-    Column('product', VARCHAR),
-    Column('quantity', Integer),
-    Column('price', Integer)
-)
-
 
 class Base(DeclarativeBase):
     __abstract__ = True
