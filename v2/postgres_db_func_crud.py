@@ -45,10 +45,10 @@ def update_data(table: Type[StockTable], data: List, **kwargs) -> bool:
             current_amount = line[0].quantity - temp_list_.get(line[0].code)
             if current_amount == 0:
                 connect.execute(delete(table).where(table.code == line[0].code))
-                print(f"Удаляю проданную позицию из наличия: {line[0].code} {line[0].name}\n")
+                print(f"\nУдаляю проданную позицию из наличия: {line[0].code} {line[0].name}\n")
             else:
                 connect.execute(update(table).where(table.code == line[0].code)
                                 .values(quantity=current_amount))
-                print(f"Меняю количество товара на сайте:\n"
-                      f"{line[0].name}\nБыло {line[0].quantity} шт. -> стало {current_amount} шт.\n")
+                print(f"\nМеняю количество товара на сайте:\n"
+                      f"{line[0].name}\nБыло {temp_list_.get(line[0].code)} шт. -> стало {current_amount} шт.\n")
     return True
